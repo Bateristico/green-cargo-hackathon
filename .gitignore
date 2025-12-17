@@ -1,0 +1,60 @@
+## .NET MAUI
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+## Couchbase
+*.cblite2/
+*.cblite/
+
+## Platform specific
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+
+## Visual Studio
+.vscode/
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Xx]64/
+[Xx]86/
+[Bb]uild/
+[Bb]uilds/
+
+## Android
+*.apk
+*.aab
+*.dex
+*.class
+
+## iOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## User-specific files
+*.userprefs
+*.usertasks
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Rider
+.idea/
+*.sln.iml
+
+## macOS
+.DS_Store

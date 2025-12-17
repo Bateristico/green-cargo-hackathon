@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CouchbaseHackathonApp.Views.TasksListPage"
+             Title="Tasks">
+    
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+        
+        <Label 
+            Grid.Row="0"
+            Text="My Tasks"
+            FontSize="24"
+            FontAttributes="Bold"
+            Margin="0,10,0,20"/>
+        
+        <CollectionView 
+            Grid.Row="1"
+            x:Name="TasksCollection"
+            SelectionMode="None">
+            
+            <CollectionView.EmptyView>
+                <StackLayout Padding="20" VerticalOptions="Center">
+                    <Label 
+                        Text="No tasks yet"
+                        FontSize="18"
+                        HorizontalOptions="Center"
+                        TextColor="Gray"/>
+                    <Label 
+                        Text="Tap + to add a task"
+                        FontSize="14"
+                        HorizontalOptions="Center"
+                        TextColor="Gray"
+                        Margin="0,10,0,0"/>
+                </StackLayout>
+            </CollectionView.EmptyView>
+            
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame 
+                        Padding="15"
+                        Margin="0,5"
+                        CornerRadius="10"
+                        HasShadow="True">
+                        
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTaskTapped"/>
+                        </Frame.GestureRecognizers>
+                        
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            
+                            <CheckBox 
+                                Grid.Column="0"
+                                IsChecked="{Binding IsCompleted}"
+                                CheckedChanged="OnTaskCheckedChanged"/>
+                            
+                            <StackLayout 
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                VerticalOptions="Center">
+                                
+                                <Label 
+                                    Text="{Binding Title}"
+                                    FontSize="16"
+                                    FontAttributes="Bold"/>
+                                
+                                <Label 
+                                    Text="{Binding Description}"
+                                    FontSize="14"
+                                    TextColor="Gray"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2"/>
+                                
+                                <Label 
+                                    Text="{Binding CreatedAt, StringFormat='{0:MMM dd, yyyy HH:mm}'}"
+                                    FontSize="12"
+                                    TextColor="LightGray"
+                                    Margin="0,5,0,0"/>
+                            </StackLayout>
+                            
+                            <Button 
+                                Grid.Column="2"
+                                Text="🗑️"
+                                FontSize="20"
+                                BackgroundColor="Transparent"
+                                Clicked="OnDeleteTaskClicked"
+                                VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        
+        <Button 
+            Grid.Row="2"
+            Text="+ Add Task"
+            FontSize="18"
+            BackgroundColor="#6200EA"
+            TextColor="White"
+            CornerRadius="25"
+            HeightRequest="50"
+            Margin="0,10,0,10"
+            Clicked="OnAddTaskClicked"/>
+    </Grid>
+    
+</ContentPage>

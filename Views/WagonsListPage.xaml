@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CouchbaseHackathonApp.Views.WagonsListPage"
+             Title="Wagons">
+    
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+        
+        <Label 
+            Grid.Row="0"
+            Text="Train Yard Wagons"
+            FontSize="24"
+            FontAttributes="Bold"
+            Margin="0,10,0,20"/>
+        
+        <CollectionView 
+            Grid.Row="1"
+            x:Name="WagonsCollection"
+            SelectionMode="None">
+            
+            <CollectionView.EmptyView>
+                <StackLayout Padding="20" VerticalOptions="Center">
+                    <Label 
+                        Text="No wagons registered"
+                        FontSize="18"
+                        HorizontalOptions="Center"
+                        TextColor="Gray"/>
+                    <Label 
+                        Text="Tap + to add a wagon"
+                        FontSize="14"
+                        HorizontalOptions="Center"
+                        TextColor="Gray"
+                        Margin="0,10,0,0"/>
+                </StackLayout>
+            </CollectionView.EmptyView>
+            
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame 
+                        Padding="15"
+                        Margin="0,5"
+                        CornerRadius="10"
+                        HasShadow="True">
+                        
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnWagonTapped"/>
+                        </Frame.GestureRecognizers>
+                        
+                        <Grid ColumnDefinitions="*,Auto">
+                            
+                            <StackLayout 
+                                Grid.Column="0"
+                                VerticalOptions="Center">
+                                
+                                <Label 
+                                    Text="{Binding WagonNumber}"
+                                    FontSize="18"
+                                    FontAttributes="Bold"/>
+                                
+                                <Label 
+                                    Text="{Binding WagonType}"
+                                    FontSize="14"
+                                    TextColor="Gray"/>
+                                
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,5,0,0">
+                                    <Label 
+                                        Grid.Column="0"
+                                        Text="📍"
+                                        FontSize="12"/>
+                                    <Label 
+                                        Grid.Column="1"
+                                        Text="{Binding CurrentLocation}"
+                                        FontSize="12"
+                                        TextColor="DarkGray"
+                                        Margin="5,0,0,0"/>
+                                    <Label 
+                                        Grid.Column="2"
+                                        Text="{Binding Status}"
+                                        FontSize="12"
+                                        TextColor="Green"
+                                        FontAttributes="Bold"
+                                        Margin="10,0,0,0"/>
+                                </Grid>
+                            </StackLayout>
+                            
+                            <Button 
+                                Grid.Column="1"
+                                Text="🗑️"
+                                FontSize="20"
+                                BackgroundColor="Transparent"
+                                Clicked="OnDeleteWagonClicked"
+                                VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        
+        <Button 
+            Grid.Row="2"
+            Text="+ Add Wagon"
+            FontSize="18"
+            BackgroundColor="#2E7D32"
+            TextColor="White"
+            CornerRadius="25"
+            HeightRequest="50"
+            Margin="0,10,0,10"
+            Clicked="OnAddWagonClicked"/>
+    </Grid>
+    
+</ContentPage>

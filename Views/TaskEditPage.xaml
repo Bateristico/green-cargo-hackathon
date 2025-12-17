@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CouchbaseHackathonApp.Views.TaskEditPage"
+             Title="Edit Task">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            
+            <Label 
+                Text="Task Details"
+                FontSize="24"
+                FontAttributes="Bold"/>
+            
+            <Label 
+                Text="Title"
+                FontSize="16"
+                FontAttributes="Bold"/>
+            
+            <Entry 
+                x:Name="TitleEntry"
+                Placeholder="Enter task title"
+                FontSize="16"/>
+            
+            <Label 
+                Text="Description"
+                FontSize="16"
+                FontAttributes="Bold"
+                Margin="0,10,0,0"/>
+            
+            <Editor 
+                x:Name="DescriptionEditor"
+                Placeholder="Enter task description"
+                HeightRequest="150"
+                FontSize="16"/>
+            
+            <CheckBox 
+                x:Name="CompletedCheckBox"
+                HorizontalOptions="Start"/>
+            
+            <Label 
+                Text="Mark as completed"
+                FontSize="14"
+                VerticalOptions="Center"
+                Margin="-220,0,0,0"/>
+            
+            <Button 
+                Text="Save Task"
+                FontSize="18"
+                BackgroundColor="#6200EA"
+                TextColor="White"
+                CornerRadius="25"
+                HeightRequest="50"
+                Margin="0,20,0,0"
+                Clicked="OnSaveClicked"/>
+            
+            <Button 
+                x:Name="DeleteButton"
+                Text="Delete Task"
+                FontSize="18"
+                BackgroundColor="#DC3545"
+                TextColor="White"
+                CornerRadius="25"
+                HeightRequest="50"
+                Clicked="OnDeleteClicked"
+                IsVisible="False"/>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+    
+</ContentPage>

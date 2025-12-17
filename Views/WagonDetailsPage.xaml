@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CouchbaseHackathonApp.Views.WagonDetailsPage"
+             Title="Wagon Details">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            
+            <Label 
+                Text="Wagon Information"
+                FontSize="24"
+                FontAttributes="Bold"/>
+            
+            <Label Text="Wagon Number" FontSize="14" FontAttributes="Bold"/>
+            <Entry x:Name="WagonNumberEntry" Placeholder="e.g., WGN-12345" FontSize="16"/>
+            
+            <Label Text="Wagon Type" FontSize="14" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <Entry x:Name="WagonTypeEntry" Placeholder="e.g., Freight, Passenger" FontSize="16"/>
+            
+            <Label Text="Current Location" FontSize="14" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <Entry x:Name="CurrentLocationEntry" Placeholder="e.g., Track A3" FontSize="16"/>
+            
+            <Label Text="Destination" FontSize="14" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <Entry x:Name="DestinationEntry" Placeholder="e.g., Stockholm Central" FontSize="16"/>
+            
+            <Label Text="Status" FontSize="14" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <Picker x:Name="StatusPicker" FontSize="16">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Available</x:String>
+                        <x:String>In Transit</x:String>
+                        <x:String>Under Inspection</x:String>
+                        <x:String>Maintenance</x:String>
+                        <x:String>Reserved</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            
+            <Grid ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+                <CheckBox x:Name="LegalCheckCheckBox" Grid.Column="0"/>
+                <Label Grid.Column="1" Text="Requires Legal Check" VerticalOptions="Center" Margin="10,0,0,0"/>
+            </Grid>
+            
+            <Label Text="Last Inspection" FontSize="14" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <DatePicker x:Name="LastInspectionPicker" FontSize="16"/>
+            
+            <Label Text="Notes" FontSize="14" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <Editor x:Name="NotesEditor" Placeholder="Additional notes..." HeightRequest="100" FontSize="16"/>
+            
+            <Button 
+                Text="Save Wagon"
+                FontSize="18"
+                BackgroundColor="#2E7D32"
+                TextColor="White"
+                CornerRadius="25"
+                HeightRequest="50"
+                Margin="0,20,0,0"
+                Clicked="OnSaveClicked"/>
+            
+            <Button 
+                x:Name="DeleteButton"
+                Text="Delete Wagon"
+                FontSize="18"
+                BackgroundColor="#DC3545"
+                TextColor="White"
+                CornerRadius="25"
+                HeightRequest="50"
+                Clicked="OnDeleteClicked"
+                IsVisible="False"/>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+    
+</ContentPage>
