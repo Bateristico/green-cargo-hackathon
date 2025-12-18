@@ -59,45 +59,59 @@ CouchbaseHackathonApp/
 
 ### Prerequisites
 
-- .NET 10 SDK
-- Visual Studio 2022 or later (or VS Code with C# Dev Kit)
-- Android SDK (for Android development)
-- Xcode (for iOS/macOS development, macOS only)
+- **.NET 10 SDK** - [Download here](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Visual Studio 2022** (recommended) or VS Code with C# Dev Kit
+- **Android SDK** - Install via Visual Studio Installer or Android Studio
+- **Xcode** (macOS only, for iOS development)
 
-### Setup
+### Quick Start
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
-   git clone https://gitlab.com/kolomolo/genai/hackathons/green-cargo-hackathon.git
+   git clone https://github.com/Bateristico/green-cargo-hackathon.git
    cd green-cargo-hackathon
    ```
 
-2. Restore dependencies:
+2. **Open in Visual Studio:**
+   - Open `CouchbaseHackathonApp.csproj` or `CouchbaseHackathonApp.slnx`
+   - Wait for NuGet packages to restore automatically
+   - Select your target platform (Android, iOS, Windows, Mac)
+
+3. **Run the app:**
+   
+   **Option A - Visual Studio:**
+   - Press F5 or click "Debug" button
+   - Select Android Emulator, iOS Simulator, or Windows Machine
+   
+   **Option B - Command Line:**
+   
+   **Android:**
    ```bash
-   dotnet restore
+   dotnet build -t:Run -f net10.0-android
+   ```
+   
+   **iOS (macOS only):**
+   ```bash
+   dotnet build -t:Run -f net10.0-ios
+   ```
+   
+   **Windows:**
+   ```bash
+   dotnet build -t:Run -f net10.0-windows10.0.19041.0
    ```
 
-3. Configure Sync Gateway (optional):
-   - Open the app and navigate to Settings
-   - Enter your Sync Gateway URL
-   - Provide authentication credentials
+4. **Test the app:**
+   - Navigate to Settings tab
+   - Click "Generate Test Wagons" to create sample data
+   - Browse wagons and tasks
+   - App works fully offline without sync configuration
 
-### Running the App
+### First Run Notes
 
-**Android:**
-```bash
-dotnet build -t:Run -f net10.0-android
-```
-
-**iOS:**
-```bash
-dotnet build -t:Run -f net10.0-ios
-```
-
-**Windows:**
-```bash
-dotnet build -t:Run -f net10.0-windows10.0.19041.0
-```
+- The app creates a local Couchbase Lite database on first launch
+- No internet connection required for local operations
+- Sync Gateway configuration is optional - only needed for cloud sync
+- All data persists between app restarts
 
 ## Configuration
 
