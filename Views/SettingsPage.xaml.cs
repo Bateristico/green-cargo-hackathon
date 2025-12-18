@@ -11,14 +11,18 @@ public partial class SettingsPage : ContentPage
     public SettingsPage()
     {
         InitializeComponent();
-        _dbService = ((App)Application.Current!).DatabaseService;
+        var app = (App)Application.Current!;
+        _dbService = app.DatabaseService;
         
-        if (_dbService.Database != null)
+        // Use the global SyncService from App
+        _syncService = app.SyncService;
+        if (_syncService != null)
         {
-            _syncService = new SyncService(_dbService.Database);
             _syncService.StatusChanged += OnSyncStatusChanged;
-            
             UpdateSyncButton();
+            
+            // Update status label
+            StatusLabel.Text = _syncService.SyncStatus;
         }
     }
 
@@ -116,5 +120,44 @@ public partial class SettingsPage : ContentPage
         }
 
         await DisplayAlert("Success", "20 test wagons created!", "OK");
+    }
+
+    private async void OnClearDatabaseClicked(object sender, EventArgs e)
+    {
+        var confirm = await DisplayAlert(
+            "⚠️ Clear Database",
+            "This will delete ALL local data and stop sync. The app will restart.\n\nAre you sure?",
+            "Yes, Clear Everything",
+            "Cancel");
+
+        if (!confirm) return;
+
+        try
+        {
+            Console.WriteLine("--->>> User requested database clear");
+            
+            // Stop sync first
+            if (_syncService != null)
+            {
+                Console.WriteLine("--->>> Stopping sync before database clear");
+                _syncService.StopSync();
+            }
+
+            // Clear database
+            Console.WriteLine("--->>> Clearing database...");
+            await _dbService.ClearAllDataAsync();
+            Console.WriteLine("--->>> Database cleared successfully");
+
+            await DisplayAlert("Success", "Database cleared. App will restart now.", "OK");
+
+            // Exit the app - user needs to restart
+            Console.WriteLine("--->>> Exiting app for restart");
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--->>> Error clearing database: {ex.Message}");
+            await DisplayAlert("Error", $"Failed to clear database: {ex.Message}", "OK");
+        }
     }
 }

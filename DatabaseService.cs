@@ -20,6 +20,32 @@ public class DatabaseService
         }
     }
 
+    private Collection GetSyncedCollection()
+    {
+        if (Database == null)
+        {
+            Console.WriteLine("ERROR: Database is NULL!");
+            throw new InvalidOperationException("Database not initialized");
+        }
+
+        Console.WriteLine($"Getting collection 'cargo' from scope 'registry'...");
+        
+        // Get or create the registry.cargo collection used by sync
+        var collection = Database.GetCollection("cargo", "registry");
+        if (collection == null)
+        {
+            Console.WriteLine("Collection not found, creating registry.cargo...");
+            collection = Database.CreateCollection("cargo", "registry");
+            Console.WriteLine($"✓ Created collection: {collection.Scope.Name}.{collection.Name}");
+        }
+        else
+        {
+            Console.WriteLine($"✓ Using existing collection: {collection.Scope.Name}.{collection.Name}");
+        }
+        
+        return collection;
+    }
+
     public async Task InitializeDatabaseAsync()
     {
         if (_database != null) return;
@@ -31,7 +57,7 @@ public class DatabaseService
 #if ANDROID
                 Couchbase.Lite.Support.Droid.Activate(Android.App.Application.Context);
 #endif
-                _database = new Database("trainyardapp");
+                _database = new Database("edge-platform-v2");
                 Console.WriteLine($"Database created: {_database.Path}");
             }
             catch (Exception ex)
@@ -46,6 +72,7 @@ public class DatabaseService
     {
         if (Database == null) throw new InvalidOperationException("Database not initialized");
         
+        var collection = GetSyncedCollection();
         var doc = new MutableDocument();
         doc.SetString("type", type);
         doc.SetString("createdAt", DateTime.UtcNow.ToString("o"));
@@ -54,10 +81,9 @@ public class DatabaseService
         {
             doc.SetValue(kvp.Key, kvp.Value);
         }
-
-        var collection = Database.GetDefaultCollection();
+        
         collection.Save(doc);
-        Console.WriteLine($"Document saved: {doc.Id}");
+        Console.WriteLine($"Document saved to {collection.Scope.Name}.{collection.Name}: {doc.Id}");
 
         return doc.Id;
     }
@@ -65,10 +91,11 @@ public class DatabaseService
     public List<Dictionary<string, object?>> GetDocuments(string type)
     {
         var results = new List<Dictionary<string, object?>>();
+        var collection = GetSyncedCollection();
 
         using var query = QueryBuilder
             .Select(SelectResult.All())
-            .From(DataSource.Collection(Database.GetDefaultCollection()))
+            .From(DataSource.Collection(collection))
             .Where(Expression.Property("type").EqualTo(Expression.String(type)));
 
         foreach (var result in query.Execute())
@@ -83,21 +110,105 @@ public class DatabaseService
 
     public int GetTotalCount()
     {
+        var collection = GetSyncedCollection();
         using var query = QueryBuilder
             .Select(SelectResult.Expression(Function.Count(Expression.All())))
-            .From(DataSource.Collection(Database.GetDefaultCollection()));
+            .From(DataSource.Collection(collection));
 
         var result = query.Execute().FirstOrDefault();
         return result?.GetInt(0) ?? 0;
+    }
+
+    public async Task<List<Views.DocumentInfo>> GetAllDocumentsRaw()
+    {
+        return await Task.Run(() =>
+        {
+            var results = new List<Views.DocumentInfo>();
+            var collection = GetSyncedCollection();
+
+            Console.WriteLine($"📊 Querying ALL documents from {collection.Scope.Name}.{collection.Name}...");
+
+            using var query = QueryBuilder
+                .Select(
+                    SelectResult.Expression(Meta.ID),
+                    SelectResult.Expression(Meta.Sequence),
+                    SelectResult.All()
+                )
+                .From(DataSource.Collection(collection));
+
+            var allResults = query.Execute().ToList();
+            Console.WriteLine($"📄 Query returned {allResults.Count} documents");
+
+            foreach (var result in allResults)
+            {
+                try
+                {
+                    var docId = result.GetString("id") ?? "unknown";
+                    var sequence = result.GetLong("sequence");
+                    var allData = result.GetDictionary(collection.Name);
+                    
+                    var docType = allData?.GetString("type") ?? "unknown";
+                    var dataJson = allData != null ? System.Text.Json.JsonSerializer.Serialize(allData.ToDictionary(), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }) : "{}";
+
+                    results.Add(new Views.DocumentInfo
+                    {
+                        Id = docId,
+                        Type = $"Type: {docType}",
+                        DataJson = dataJson,
+                        Sequence = $"Sequence: #{sequence}"
+                    });
+
+                    Console.WriteLine($"  📄 Doc: {docId} (seq #{sequence}) - type: {docType}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  ❌ Error reading document: {ex.Message}");
+                }
+            }
+
+            Console.WriteLine($"✅ Loaded {results.Count} documents successfully");
+            return results;
+        });
     }
 
     public async Task ClearAllDataAsync()
     {
         await Task.Run(() =>
         {
-            Database.Delete();
-            _database = new Database("trainyardapp");
-            Console.WriteLine("Database cleared");
+            try
+            {
+                Console.WriteLine("--->>> ⚠ NUCLEAR OPTION: Deleting entire database file");
+                
+                // Close and delete the physical database file
+                if (_database != null)
+                {
+                    var dbPath = _database.Path;
+                    Console.WriteLine($"--->>> Database path: {dbPath}");
+                    
+                    _database.Close();
+                    _database.Dispose();
+                    _database = null;
+                    
+                    // Delete the database file completely
+                    Database.Delete("edge-platform-v2", null);
+                    Console.WriteLine("--->>> ✓ Database file deleted from disk");
+                }
+                
+                // Recreate fresh database
+                _database = new Database("edge-platform-v2");
+                Console.WriteLine($"--->>> ✓ Fresh database created at: {_database.Path}");
+                
+                // Recreate the collection
+                var collection = _database.CreateCollection("cargo", "registry");
+                Console.WriteLine($"--->>> ✓ Created fresh collection: {collection.Scope.Name}.{collection.Name}");
+                
+                Console.WriteLine("--->>> ✓ Database completely cleared and recreated");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"--->>> ❌ Error clearing database: {ex.Message}");
+                Console.WriteLine($"--->>>    Stack trace: {ex.StackTrace}");
+            }
         });
     }
     // CRUD operations for Tasks
@@ -120,11 +231,12 @@ public List<TaskItem> GetAllTasks()
     
     try
     {
+        var collection = GetSyncedCollection();
         using var query = QueryBuilder
             .Select(
                 SelectResult.Expression(Meta.ID),
                 SelectResult.All())
-            .From(DataSource.Collection(Database.GetDefaultCollection()))
+            .From(DataSource.Collection(collection))
             .Where(Expression.Property("type").EqualTo(Expression.String("task")))
             .OrderBy(Ordering.Property("createdAt").Descending());
         
@@ -162,7 +274,7 @@ public void UpdateTask(TaskItem task)
 {
     try
     {
-        var collection = Database.GetDefaultCollection();
+        var collection = GetSyncedCollection();
         var doc = collection.GetDocument(task.Id);
         
         if (doc != null)
@@ -186,7 +298,7 @@ public void DeleteTask(string taskId)
 {
     try
     {
-        var collection = Database.GetDefaultCollection();
+        var collection = GetSyncedCollection();
         var doc = collection.GetDocument(taskId);
         
         if (doc != null)
@@ -226,11 +338,12 @@ public List<Wagon> GetAllWagons()
     
     try
     {
+        var collection = GetSyncedCollection();
         using var query = QueryBuilder
             .Select(
                 SelectResult.Expression(Meta.ID),
                 SelectResult.All())
-            .From(DataSource.Collection(Database.GetDefaultCollection()))
+            .From(DataSource.Collection(collection))
             .Where(Expression.Property("type").EqualTo(Expression.String("wagon")))
             .OrderBy(Ordering.Property("wagonNumber").Ascending());
         
@@ -275,7 +388,7 @@ public void UpdateWagon(Wagon wagon)
 {
     try
     {
-        var collection = Database.GetDefaultCollection();
+        var collection = GetSyncedCollection();
         var doc = collection.GetDocument(wagon.Id);
         
         if (doc != null)
@@ -304,7 +417,7 @@ public void DeleteWagon(string wagonId)
 {
     try
     {
-        var collection = Database.GetDefaultCollection();
+        var collection = GetSyncedCollection();
         var doc = collection.GetDocument(wagonId);
         
         if (doc != null)
